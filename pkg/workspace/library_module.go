@@ -79,7 +79,8 @@ func (b LibraryModule) Get(thread *starlark.Thread, f *starlark.Builtin,
 
 	// copy over library values
 	dataValuess := append([]*datavalues.Envelope{}, b.libraryValues...)
-	libraryCtx := LibraryExecutionContext{Current: foundLib, Root: foundLib}
+	// Preserve the root library context to allow access to root _ytt_lib
+	libraryCtx := LibraryExecutionContext{Current: foundLib, Root: b.libraryCtx.Root}
 
 	return (&libraryValue{libPath, libAlias, dataValuess, b.librarySchemas, libraryCtx,
 		b.libraryExecutionFactory.

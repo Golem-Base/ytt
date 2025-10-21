@@ -93,13 +93,12 @@ func (l *TemplateLoader) Load(thread *starlark.Thread, module string) (starlark.
 		foundLib, err := libraryCtx.Current.FindAccessibleLibrary(pieces[0])
 		if err != nil {
 			// If not found in current library context, try root library
-			if libraryCtx.Root != nil && libraryCtx.Current != libraryCtx.Root {
-				foundLib, err = libraryCtx.Root.FindAccessibleLibrary(pieces[0])
-				if err != nil {
-					return nil, fmt.Errorf("cannot load @%s: %s", module, err)
-				}
-			} else {
+			if libraryCtx.Root == nil || libraryCtx.Current == libraryCtx.Root {
 				return nil, err
+			}
+			foundLib, err = libraryCtx.Root.FindAccessibleLibrary(pieces[0])
+			if err != nil {
+				return nil, fmt.Errorf("cannot load @%s: %s", module, err)
 			}
 		}
 

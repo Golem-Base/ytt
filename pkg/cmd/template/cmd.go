@@ -104,7 +104,7 @@ func (o *Options) Run() error {
 func (o *Options) RunWithFiles(in Input, ui ui.UI) Output {
 	var err error
 
-	in.Files, err = o.FileMarksOpts.Apply(in.Files)
+	in.Files, err = o.FileMarksOpts.Apply(in.Files, ui)
 	if err != nil {
 		return Output{Err: err}
 	}

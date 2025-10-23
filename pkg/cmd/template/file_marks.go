@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"carvel.dev/ytt/pkg/cmd/ui"
 	"carvel.dev/ytt/pkg/files"
 )
 
@@ -21,7 +22,7 @@ func (s *FileMarksOpts) Set(cmdFlags CmdFlags) {
 	cmdFlags.StringArrayVar(&s.FileMarks, "file-mark", nil, "File mark (ie change file path, mark as non-template) (format: file:key=value) (can be specified multiple times)")
 }
 
-func (s *FileMarksOpts) Apply(filesToProcess []*files.File) ([]*files.File, error) {
+func (s *FileMarksOpts) Apply(filesToProcess []*files.File, ui ui.UI) ([]*files.File, error) {
 	var exclusiveForOutputFiles []*files.File
 
 	for _, mark := range s.FileMarks {
@@ -38,6 +39,7 @@ func (s *FileMarksOpts) Apply(filesToProcess []*files.File) ([]*files.File, erro
 		}
 
 		var matched bool
+		isExclude := kv[0] == "exclude"
 
 		for i, file := range filesToProcess {
 			if s.fileMarkMatches(file, path) {
@@ -102,7 +104,11 @@ func (s *FileMarksOpts) Apply(filesToProcess []*files.File) ([]*files.File, erro
 		}
 
 		if !matched {
-			return nil, fmt.Errorf("Expected file mark '%s' to match at least one file by path, but did not", mark)
+			if isExclude {
+				ui.Warnf("File mark '%s' did not match any files, ignoring\n", mark)
+			} else {
+				return nil, fmt.Errorf("Expected file mark '%s' to match at least one file by path, but did not", mark)
+			}
 		}
 
 		// Remove files that were cleared out
